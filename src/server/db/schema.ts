@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
   pgTable,
   pgTableCreator,
   text,
@@ -10,21 +11,19 @@ import {
 
 export const createTable = pgTableCreator((name) => `pg-drizzle_${name}`);
 
-export const posts = createTable(
+export const posts = pgTable(
   "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    name: text("name"),
+    createdById: text("created_by_id")
       .notNull()
       .references(() => user.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
+    createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
+    updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
+  },
   (t) => [
     index("created_by_idx").on(t.createdById),
     index("name_idx").on(t.name),
@@ -38,7 +37,12 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified")
     .$defaultFn(() => false)
     .notNull(),
+  username: text("username").unique(),
+  bio: text("bio"),
   image: text("image"),
+  theme: text("theme").default("default").notNull(),
+  buttonStyle: text("button_style").default("rounded").notNull(),
+  socialLinks: text("social_links"), // stored as JSON string
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
@@ -91,9 +95,44 @@ export const verification = pgTable("verification", {
   ),
 });
 
+export const links = pgTable("link", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  icon: text("icon"),
+  visible: boolean("visible").default(true).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+export const analytics = pgTable("analytics", {
+  id: text("id").primaryKey(),
+  linkId: text("link_id")
+    .notNull()
+    .references(() => links.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  clickedAt: timestamp("clicked_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  device: text("device"),
+  browser: text("browser"),
+  referrer: text("referrer"),
+});
+
 export const userRelations = relations(user, ({ many }) => ({
   account: many(account),
   session: many(session),
+  links: many(links),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -102,4 +141,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, { fields: [session.userId], references: [user.id] }),
+}));
+
+export const linkRelations = relations(links, ({ one, many }) => ({
+  user: one(user, { fields: [links.userId], references: [user.id] }),
+  analytics: many(analytics),
+}));
+
+export const analyticsRelations = relations(analytics, ({ one }) => ({
+  link: one(links, { fields: [analytics.linkId], references: [links.id] }),
+  user: one(user, { fields: [analytics.userId], references: [user.id] }),
 }));
