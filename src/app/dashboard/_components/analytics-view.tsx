@@ -10,8 +10,11 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
-import { TrendingUp, MousePointer2, BarChart3, Calendar } from "lucide-react";
+import { TrendingUp, MousePointer2, Monitor, Smartphone } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -21,14 +24,32 @@ import {
 } from "~/components/ui/card";
 import { api } from "~/trpc/react";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Button } from "~/components/ui/button";
+import Link from "next/link";
+import { Lock, Sparkles } from "lucide-react";
+
+const COLORS = [
+  "hsl(var(--primary))",
+  "hsl(221, 83%, 53%)",
+  "hsl(262, 83%, 58%)",
+  "hsl(291, 64%, 42%)",
+  "hsl(24, 90%, 50%)",
+];
 
 /**
  * analytics view component with charts and metrics
  */
 export function AnalyticsView() {
-  const { data: summary, isLoading } = api.analytics.getSummary.useQuery();
+  const { data: summary, isLoading: summaryLoading } =
+    api.analytics.getSummary.useQuery();
+  const { data: deviceStats, isLoading: deviceLoading } =
+    api.analytics.getDeviceStats.useQuery();
+  const { data: browserStats, isLoading: browserLoading } =
+    api.analytics.getBrowserStats.useQuery();
+  const { data: todayClicks, isLoading: todayLoading } =
+    api.analytics.getTodayClicks.useQuery();
 
-  if (isLoading) {
+  if (summaryLoading || deviceLoading || browserLoading || todayLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -42,6 +63,46 @@ export function AnalyticsView() {
   }
 
   if (!summary) return null;
+
+  // checking if user needs to upgrade for full analytics
+  if (summary.requiresUpgrade) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="bg-primary/10 mb-6 flex h-20 w-20 items-center justify-center rounded-full">
+          <Lock className="text-primary" size={40} />
+        </div>
+        <h2 className="mb-2 text-2xl font-bold">Unlock Full Analytics</h2>
+        <p className="text-muted-foreground mb-2 max-w-md">
+          You've had{" "}
+          <span className="text-primary font-bold">{summary.totalClicks}</span>{" "}
+          total clicks! Upgrade to Pro to see detailed analytics including:
+        </p>
+        <ul className="text-muted-foreground mb-6 space-y-1 text-sm">
+          <li>✓ Click trends over time</li>
+          <li>✓ Performance by link</li>
+          <li>✓ Device & browser breakdown</li>
+          <li>✓ Referrer tracking</li>
+        </ul>
+        <Link href="/pricing">
+          <Button className="h-12 rounded-full px-8 text-base font-semibold">
+            <Sparkles className="mr-2" size={18} />
+            Upgrade to Pro
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // formatting device and browser data for pie charts
+  const formattedDeviceData = (deviceStats ?? []).map((item) => ({
+    name: item.device || "Unknown",
+    value: item.clicks,
+  }));
+
+  const formattedBrowserData = (browserStats ?? []).map((item) => ({
+    name: item.browser || "Unknown",
+    value: item.clicks,
+  }));
 
   return (
     <div className="space-y-6">
@@ -65,16 +126,14 @@ export function AnalyticsView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-              top link
+              today's clicks
             </CardTitle>
-            <BarChart3 size={16} className="text-orange-500" />
+            <TrendingUp size={16} className="text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="truncate text-2xl font-bold">
-              {summary.clicksPerLink[0]?.title ?? "N/A"}
-            </div>
+            <div className="text-3xl font-bold">{todayClicks ?? 0}</div>
             <p className="text-muted-foreground mt-1 text-xs">
-              {summary.clicksPerLink[0]?.clicks ?? 0} clicks
+              in the last 24 hours
             </p>
           </CardContent>
         </Card>
@@ -82,14 +141,16 @@ export function AnalyticsView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-              period
+              active links
             </CardTitle>
-            <Calendar size={16} className="text-green-500" />
+            <Smartphone size={16} className="text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">last 7 days</div>
+            <div className="text-3xl font-bold">
+              {summary.clicksPerLink.length}
+            </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              active tracking period
+              links being tracked
             </p>
           </CardContent>
         </Card>
@@ -145,9 +206,9 @@ export function AnalyticsView() {
                 <Line
                   type="monotone"
                   dataKey="clicks"
-                  stroke="#4A6741" // matching sage green primary theme
+                  stroke="hsl(var(--primary))"
                   strokeWidth={3}
-                  dot={{ r: 4, fill: "#4A6741", strokeWidth: 2 }}
+                  dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 2 }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                 />
               </LineChart>
@@ -156,7 +217,7 @@ export function AnalyticsView() {
         </CardContent>
       </Card>
 
-      {/* Clicks Per Link Chart */}
+      {/* Clicks Per Link Chart & Device/Browser Stats */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -181,7 +242,7 @@ export function AnalyticsView() {
                   <Tooltip cursor={{ fill: "transparent" }} />
                   <Bar
                     dataKey="clicks"
-                    fill="#D17A5D" // terracotta accent
+                    fill="hsl(var(--primary))"
                     radius={[0, 4, 4, 0]}
                     barSize={20}
                   />
@@ -191,15 +252,48 @@ export function AnalyticsView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-muted/5 flex flex-col items-center justify-center border-2 border-dashed p-6 text-center">
-          <div className="bg-primary/10 text-primary mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-            <BarChart3 size={32} />
-          </div>
-          <h3 className="text-lg font-bold">insights coming soon</h3>
-          <p className="text-muted-foreground mt-2 max-w-[250px] text-sm">
-            we are building deeper insights like regional tracking and browser
-            analytics.
-          </p>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Monitor className="text-primary" size={20} />
+              <CardTitle>device & browser stats</CardTitle>
+            </div>
+            <CardDescription>visitor breakdown by device type</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {formattedDeviceData.length > 0 ? (
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={formattedDeviceData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) =>
+                        `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
+                      }
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {formattedDeviceData.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-muted-foreground flex h-[250px] items-center justify-center text-sm">
+                No device data available yet. Start sharing your links!
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>

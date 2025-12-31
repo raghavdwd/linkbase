@@ -152,3 +152,102 @@ export const analyticsRelations = relations(analytics, ({ one }) => ({
   link: one(links, { fields: [analytics.linkId], references: [links.id] }),
   user: one(user, { fields: [analytics.userId], references: [user.id] }),
 }));
+
+// ============================================
+// SUBSCRIPTION & PAYMENT TABLES (4NF)
+// ============================================
+
+/**
+ * plans table - defines available subscription tiers
+ * 4NF: single-valued attributes only, no multi-valued dependencies
+ */
+export const plans = pgTable("plan", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(), // "Free", "Pro", "Business"
+  slug: text("slug").notNull().unique(), // "free", "pro", "business"
+  priceMonthly: integer("price_monthly").default(0).notNull(), // price in paisa (₹1 = 100 paisa)
+  priceYearly: integer("price_yearly").default(0).notNull(),
+  linkLimit: integer("link_limit").default(5).notNull(), // -1 for unlimited
+  analyticsEnabled: boolean("analytics_enabled").default(false).notNull(),
+  description: text("description"),
+  features: text("features"), // JSON array of feature strings
+  isPopular: boolean("is_popular").default(false).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+/**
+ * subscriptions table - tracks user plan memberships
+ * 4NF: no multi-valued dependencies, separate from payments
+ */
+export const subscriptions = pgTable("subscription", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  planId: text("plan_id")
+    .notNull()
+    .references(() => plans.id),
+  status: text("status").default("active").notNull(), // active, cancelled, expired, past_due
+  billingCycle: text("billing_cycle").default("monthly").notNull(), // monthly, yearly
+  currentPeriodStart: timestamp("current_period_start").notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  razorpaySubscriptionId: text("razorpay_subscription_id"),
+  cancelledAt: timestamp("cancelled_at"),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+/**
+ * payments table - payment transaction history
+ * 4NF: isolated from subscriptions, handles payment events
+ */
+export const payments = pgTable("payment", {
+  id: text("id").primaryKey(),
+  subscriptionId: text("subscription_id")
+    .notNull()
+    .references(() => subscriptions.id, { onDelete: "cascade" }),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  razorpayOrderId: text("razorpay_order_id"),
+  amount: integer("amount").notNull(), // amount in paisa
+  currency: text("currency").default("INR").notNull(),
+  status: text("status").default("pending").notNull(), // pending, completed, failed, refunded
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+// Subscription relations
+export const planRelations = relations(plans, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptionRelations = relations(
+  subscriptions,
+  ({ one, many }) => ({
+    user: one(user, { fields: [subscriptions.userId], references: [user.id] }),
+    plan: one(plans, {
+      fields: [subscriptions.planId],
+      references: [plans.id],
+    }),
+    payments: many(payments),
+  }),
+);
+
+export const paymentRelations = relations(payments, ({ one }) => ({
+  subscription: one(subscriptions, {
+    fields: [payments.subscriptionId],
+    references: [subscriptions.id],
+  }),
+}));
+
+// Update user relations to include subscriptions
+export const userSubscriptionRelations = relations(user, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}));

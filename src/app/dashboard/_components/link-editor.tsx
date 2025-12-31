@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, AlertCircle, Sparkles } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -33,25 +33,28 @@ import { LinkCard } from "./link-card";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { toast } from "react-hot-toast";
 import { Skeleton } from "~/components/ui/skeleton";
+import Link from "next/link";
 
-type Link = RouterOutputs["link"]["getAll"][number];
+type LinkType = RouterOutputs["link"]["getAll"][number];
 
 /**
  * core link editor component with dnd-kit sorting
  */
 export function LinkEditor() {
-  const [links, setLinks] = useState<Link[]>([]);
+  const [links, setLinks] = useState<LinkType[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   const { data: serverLinks, isLoading } = api.link.getAll.useQuery();
+  const { data: linkLimits } = api.subscription.getLinkLimits.useQuery();
   const utils = api.useUtils();
 
   const createMutation = api.link.create.useMutation({
     onSuccess: () => {
       void utils.link.getAll.invalidate();
+      void utils.subscription.getLinkLimits.invalidate();
       toast.success("link added");
       setIsAddDialogOpen(false);
       setNewTitle("");
@@ -127,19 +130,55 @@ export function LinkEditor() {
     );
   }
 
+  const canCreateMore = linkLimits?.canCreateMore ?? true;
+  const currentCount = linkLimits?.currentCount ?? 0;
+  const limit = linkLimits?.limit ?? 5;
+  const isUnlimited = linkLimits?.isUnlimited ?? false;
+
   return (
     <div className="space-y-6">
+      {/* Link Limit Warning */}
+      {!canCreateMore && (
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-900 dark:bg-orange-950">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-orange-500" size={24} />
+            <div>
+              <p className="font-semibold text-orange-800 dark:text-orange-200">
+                Link limit reached ({currentCount}/{limit})
+              </p>
+              <p className="text-sm text-orange-600 dark:text-orange-400">
+                Upgrade to Pro for unlimited links
+              </p>
+            </div>
+          </div>
+          <Link href="/pricing">
+            <Button className="rounded-full" size="sm">
+              <Sparkles className="mr-2" size={14} />
+              Upgrade
+            </Button>
+          </Link>
+        </div>
+      )}
+
       <div className="bg-muted/30 flex flex-col items-start justify-between gap-4 rounded-2xl p-4 sm:flex-row sm:items-center md:p-6">
         <div>
           <h2 className="text-xl font-bold md:text-2xl">manage links</h2>
           <p className="text-muted-foreground text-sm">
             add, edit or reorder your links
+            {!isUnlimited && (
+              <span className="bg-primary/10 text-primary ml-2 rounded-full px-2 py-0.5 text-xs font-medium">
+                {currentCount}/{limit} used
+              </span>
+            )}
           </p>
         </div>
 
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="h-11 w-full rounded-full px-6 shadow-lg transition-all hover:shadow-xl sm:w-auto">
+            <Button
+              className="h-11 w-full rounded-full px-6 shadow-lg transition-all hover:shadow-xl sm:w-auto"
+              disabled={!canCreateMore}
+            >
               <Plus className="mr-2 h-4 w-4" /> add link
             </Button>
           </DialogTrigger>

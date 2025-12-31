@@ -9,6 +9,7 @@ import {
   Share2,
   Loader2,
   Link as LinkIcon,
+  Sparkles,
 } from "lucide-react";
 import { authClient } from "~/server/better-auth/client";
 import { Button } from "~/components/ui/button";
@@ -108,6 +109,13 @@ export function DashboardNavbar() {
             >
               <Layout size={16} />{" "}
               <span className="xs:inline hidden">dashboard</span>
+            </Link>
+            <Link
+              href="/pricing"
+              className="hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors"
+            >
+              <Sparkles size={16} />{" "}
+              <span className="xs:inline hidden">pricing</span>
             </Link>
           </div>
         </div>
