@@ -39,14 +39,20 @@ function getDeviceType(): string {
 
 /**
  * detecting browser from user agent
+ * Order is critical: Edge UA contains "edg"+"chrome"+"safari",
+ * Chrome UA contains "chrome"+"safari", Safari UA contains only "safari"
+ * Must check in order: Edge → Chrome → Safari to avoid misidentification
  */
 function getBrowser(): string {
   if (typeof window === "undefined") return "unknown";
 
   const ua = navigator.userAgent.toLowerCase();
 
+  // Check Edge first (contains "edg", "chrome", and "safari")
   if (ua.includes("edg")) return "Edge";
+  // Check Chrome second (contains "chrome" and "safari")
   if (ua.includes("chrome")) return "Chrome";
+  // Check Safari third (contains only "safari")
   if (ua.includes("safari")) return "Safari";
   if (ua.includes("firefox")) return "Firefox";
   if (ua.includes("opera") || ua.includes("opr")) return "Opera";
