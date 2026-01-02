@@ -7,7 +7,7 @@ import {
 import { plans, subscriptions, payments, links } from "~/server/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { env } from "~/env";
 
 /**
@@ -195,8 +195,14 @@ export const subscriptionRouter = createTRPCRouter({
         .update(`${input.orderId}|${input.paymentId}`)
         .digest("hex");
 
-      // compare signatures using timing-safe comparison
-      if (generatedSignature !== input.signature) {
+      // compare signatures using timing-safe comparison to prevent timing attacks
+      const receivedSignatureBuffer = Buffer.from(input.signature, "hex");
+      const generatedSignatureBuffer = Buffer.from(generatedSignature, "hex");
+
+      if (
+        receivedSignatureBuffer.length !== generatedSignatureBuffer.length ||
+        !timingSafeEqual(receivedSignatureBuffer, generatedSignatureBuffer)
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid payment signature",
