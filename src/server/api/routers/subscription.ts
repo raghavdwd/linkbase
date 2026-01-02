@@ -156,7 +156,7 @@ export const subscriptionRouter = createTRPCRouter({
       // in production, this would call Razorpay API
 
       return {
-        orderId: `order_${crypto.randomUUID().slice(0, 8)}`,
+        orderId: `order_${crypto.randomUUID()}`,
         amount,
         currency: "INR",
         planId: plan.id,
