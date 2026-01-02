@@ -102,4 +102,30 @@ export const userRouter = createTRPCRouter({
         links: userLinks,
       };
     }),
+
+  /**
+   * public procedure to check if a username is available
+   */
+  checkUsername: publicProcedure
+    .input(
+      z.object({
+        username: z
+          .string()
+          .min(3, "username must be at least 3 characters")
+          .max(30, "username must be at most 30 characters")
+          .regex(
+            /^[a-z0-9_-]+$/,
+            "username can only contain lowercase letters, numbers, underscores, and hyphens",
+          ),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const existingUser = await ctx.db.query.user.findFirst({
+        where: eq(user.username, input.username),
+      });
+
+      return {
+        available: !existingUser,
+      };
+    }),
 });

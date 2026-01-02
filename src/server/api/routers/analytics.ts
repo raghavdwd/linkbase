@@ -4,28 +4,28 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { analytics, links, subscriptions } from "~/server/db/schema";
+import { analytics, links, subscriptions, plans } from "~/server/db/schema";
 import { eq, count, and, sql } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
+import { db } from "~/server/db";
 
 /**
  * helper to check if user has analytics access
  */
-async function checkAnalyticsAccess(ctx: {
-  db: any;
-  session: { user: { id: string } };
-}) {
-  const subscription = await ctx.db.query.subscriptions.findFirst({
+async function checkAnalyticsAccess(userId: string) {
+  const subscription = await db.query.subscriptions.findFirst({
     where: and(
-      eq(subscriptions.userId, ctx.session.user.id),
+      eq(subscriptions.userId, userId),
       eq(subscriptions.status, "active"),
     ),
-    with: {
-      plan: true,
-    },
   });
 
-  return subscription?.plan?.analyticsEnabled ?? false;
+  if (!subscription) return false;
+
+  const plan = await db.query.plans.findFirst({
+    where: eq(plans.id, subscription.planId),
+  });
+
+  return plan?.analyticsEnabled ?? false;
 }
 
 /**
@@ -37,7 +37,7 @@ export const analyticsRouter = createTRPCRouter({
    */
   getSummary: protectedProcedure.query(async ({ ctx }) => {
     // checking if user has analytics access
-    const hasAccess = await checkAnalyticsAccess(ctx);
+    const hasAccess = await checkAnalyticsAccess(ctx.session.user.id);
 
     if (!hasAccess) {
       // returning limited data for free users

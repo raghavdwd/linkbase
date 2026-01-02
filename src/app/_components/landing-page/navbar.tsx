@@ -22,22 +22,28 @@ export function Navbar() {
 
         <div className="hidden items-center gap-8 md:flex">
           <Link
-            href="#features"
-            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
-          >
-            Features
-          </Link>
-          <Link
-            href="#how-it-works"
+            href="/how-it-works"
             className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
           >
             How it works
           </Link>
           <Link
-            href="#pricing"
+            href="/pricing"
             className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
           >
             Pricing
+          </Link>
+          <Link
+            href="/blog"
+            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
+          >
+            Blog
+          </Link>
+          <Link
+            href="/about"
+            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
+          >
+            About
           </Link>
         </div>
 

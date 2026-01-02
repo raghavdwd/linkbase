@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { PhoneMockup } from "./phone-mockup";
@@ -9,6 +11,38 @@ import { PhoneMockup } from "./phone-mockup";
  * @returns hero component
  */
 export function Hero() {
+  const [username, setUsername] = useState("");
+  const router = useRouter();
+
+  /**
+   * handles the claim button click
+   * redirects to signup with the desired username
+   */
+  const handleClaimLinkbase = () => {
+    // trimming whitespace and removing special characters for clean username
+    const cleanUsername = username
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "");
+
+    if (cleanUsername) {
+      // redirecting to signup with the desired username as a query param
+      router.push(`/signup?username=${encodeURIComponent(cleanUsername)}`);
+    } else {
+      // if no username entered, just go to signup page
+      router.push("/signup");
+    }
+  };
+
+  /**
+   * handles enter key press in the input field
+   */
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleClaimLinkbase();
+    }
+  };
+
   return (
     <section className="relative overflow-hidden pt-32 pb-20 md:pt-48 md:pb-32">
       <div className="container mx-auto px-4">
@@ -19,7 +53,7 @@ export function Hero() {
               <span className="text-primary">one simple link</span>.
             </h1>
             <p className="text-muted-foreground mt-6 text-xl md:text-2xl">
-              Join 50M+ people using Linktree for their link in bio. One link to
+              Join 50M+ people using Linkbase for their link in bio. One link to
               help you share everything you create, curate and sell.
             </p>
 
@@ -31,11 +65,15 @@ export function Hero() {
                 <Input
                   type="text"
                   placeholder="yourname"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   className="focus-visible:ring-primary h-14 pl-24 text-lg"
                 />
               </div>
               <Button
                 size="lg"
+                onClick={handleClaimLinkbase}
                 className="bg-secondary text-secondary-foreground hover:bg-secondary/90 h-14 rounded-full px-8 text-lg font-bold"
               >
                 Claim your Linkbase

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { authClient } from "~/server/better-auth/client";
+import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -15,24 +16,65 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Github } from "lucide-react";
+import { Github, Check, X } from "lucide-react";
 
 /**
- * rendering signup page with email and social login options
- * @returns signup page component
+ * signup form component that reads query params
  */
-export default function SignupPage() {
+function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [debouncedUsername, setDebouncedUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // using tRPC to check username availability
+  const { data: usernameCheck, isLoading: checkingUsername } =
+    api.user.checkUsername.useQuery(
+      { username: debouncedUsername },
+      {
+        enabled: debouncedUsername.length >= 3,
+        staleTime: 10000, // caching result for 10 seconds
+      },
+    );
+
+  const usernameAvailable = usernameCheck?.available ?? null;
+
+  // reading username from query params on mount (from landing page claim button)
+  useEffect(() => {
+    const usernameParam = searchParams.get("username");
+    if (usernameParam) {
+      setUsername(usernameParam);
+      setDebouncedUsername(usernameParam);
+    }
+  }, [searchParams]);
+
+  // debouncing username input for API calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedUsername(username);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [username]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // validating username format
+    if (username && !/^[a-z0-9_-]{3,30}$/.test(username)) {
+      setError(
+        "Username must be 3-30 characters and can only contain lowercase letters, numbers, underscores, and hyphens",
+      );
+      setLoading(false);
+      return;
+    }
 
     try {
       const { error } = await authClient.signUp.email({
@@ -45,6 +87,10 @@ export default function SignupPage() {
       if (error) {
         toast.error(error.message ?? "An error occurred during signup");
       } else {
+        // storing username in localStorage to set after email verification
+        if (username) {
+          localStorage.setItem("pendingUsername", username);
+        }
         toast.success("Account created! Please verify your email.");
         // navigating to verification page after successful initial signup
         router.push(`/verify-email?email=${encodeURIComponent(email)}`);
@@ -58,17 +104,34 @@ export default function SignupPage() {
   };
 
   const signInWithGoogle = async () => {
+    // storing username in localStorage to set after OAuth callback
+    if (username) {
+      localStorage.setItem("pendingUsername", username);
+    }
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: "/dashboard",
     });
   };
 
   const signInWithGithub = async () => {
+    // storing username in localStorage to set after OAuth callback
+    if (username) {
+      localStorage.setItem("pendingUsername", username);
+    }
     await authClient.signIn.social({
       provider: "github",
-      callbackURL: "/",
+      callbackURL: "/dashboard",
     });
+  };
+
+  /**
+   * handles username input change
+   * sanitizing to only allow valid characters
+   */
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    setUsername(value);
   };
 
   return (
@@ -79,17 +142,65 @@ export default function SignupPage() {
             Create an account
           </CardTitle>
           <CardDescription>
-            Enter your email below to create your account
+            Enter your details below to claim your Linkbase
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
+          {/* username field - prominent position */}
+          <div className="grid gap-2">
+            <label
+              htmlFor="username"
+              className="text-sm leading-none font-medium"
+            >
+              Choose your username
+            </label>
+            <div className="relative">
+              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2 text-sm">
+                linkbase.io/
+              </span>
+              <Input
+                id="username"
+                type="text"
+                placeholder="yourname"
+                value={username}
+                onChange={handleUsernameChange}
+                className="pr-10 pl-24"
+                maxLength={30}
+              />
+              {/* availability indicator */}
+              <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                {checkingUsername && debouncedUsername.length >= 3 && (
+                  <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                )}
+                {!checkingUsername && usernameAvailable === true && (
+                  <Check className="h-5 w-5 text-green-500" />
+                )}
+                {!checkingUsername && usernameAvailable === false && (
+                  <X className="h-5 w-5 text-red-500" />
+                )}
+              </div>
+            </div>
+            {username &&
+              username.length >= 3 &&
+              usernameAvailable === false && (
+                <p className="text-destructive text-xs">
+                  This username is already taken
+                </p>
+              )}
+            {username && username.length > 0 && username.length < 3 && (
+              <p className="text-muted-foreground text-xs">
+                Username must be at least 3 characters
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <Button variant="outline" onClick={signInWithGithub}>
               <Github className="mr-2 h-4 w-4" />
               Github
             </Button>
             <Button variant="outline" onClick={signInWithGoogle}>
-              {/* google icon placeholder */}
+              {/* google icon */}
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -118,13 +229,16 @@ export default function SignupPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background text-muted-foreground px-2">
-                Or continue with
+                Or continue with email
               </span>
             </div>
           </div>
           <form onSubmit={handleSignup} className="grid gap-4">
             <div className="grid gap-2">
-              <label htmlFor="name text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="name"
+                className="text-sm leading-none font-medium"
+              >
                 Name
               </label>
               <Input
@@ -137,7 +251,10 @@ export default function SignupPage() {
               />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="email text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="email"
+                className="text-sm leading-none font-medium"
+              >
                 Email
               </label>
               <Input
@@ -150,7 +267,10 @@ export default function SignupPage() {
               />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="password text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="password"
+                className="text-sm leading-none font-medium"
+              >
                 Password
               </label>
               <Input
@@ -162,7 +282,12 @@ export default function SignupPage() {
               />
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={
+                loading || (usernameAvailable === false && username.length >= 3)
+              }
+            >
               {loading ? "Creating account..." : "Create account"}
             </Button>
           </form>
@@ -177,5 +302,23 @@ export default function SignupPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+/**
+ * rendering signup page with email and social login options
+ * @returns signup page component
+ */
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-muted/50 flex min-h-screen items-center justify-center p-4">
+          <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

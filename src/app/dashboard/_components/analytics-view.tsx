@@ -44,7 +44,7 @@ export function AnalyticsView() {
     api.analytics.getSummary.useQuery();
   const { data: deviceStats, isLoading: deviceLoading } =
     api.analytics.getDeviceStats.useQuery();
-  const { data: browserStats, isLoading: browserLoading } =
+  const { isLoading: browserLoading } =
     api.analytics.getBrowserStats.useQuery();
   const { data: todayClicks, isLoading: todayLoading } =
     api.analytics.getTodayClicks.useQuery();
@@ -73,7 +73,7 @@ export function AnalyticsView() {
         </div>
         <h2 className="mb-2 text-2xl font-bold">Unlock Full Analytics</h2>
         <p className="text-muted-foreground mb-2 max-w-md">
-          You've had{" "}
+          You&apos;ve had{" "}
           <span className="text-primary font-bold">{summary.totalClicks}</span>{" "}
           total clicks! Upgrade to Pro to see detailed analytics including:
         </p>
@@ -93,14 +93,9 @@ export function AnalyticsView() {
     );
   }
 
-  // formatting device and browser data for pie charts
+  // formatting device data for pie charts
   const formattedDeviceData = (deviceStats ?? []).map((item) => ({
-    name: item.device || "Unknown",
-    value: item.clicks,
-  }));
-
-  const formattedBrowserData = (browserStats ?? []).map((item) => ({
-    name: item.browser || "Unknown",
+    name: item.device ?? "Unknown",
     value: item.clicks,
   }));
 
@@ -126,7 +121,7 @@ export function AnalyticsView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-              today's clicks
+              today&apos;s clicks
             </CardTitle>
             <TrendingUp size={16} className="text-green-500" />
           </CardHeader>

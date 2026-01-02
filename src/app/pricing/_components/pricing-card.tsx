@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Check, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import Link from "next/link";
 
 interface PricingCardProps {
   planId: string;
@@ -32,7 +31,7 @@ function formatPrice(paisa: number): string {
  * pricing card component for individual plan display
  */
 export function PricingCard({
-  planId,
+  planId: _planId,
   name,
   slug,
   priceMonthly,
@@ -40,8 +39,8 @@ export function PricingCard({
   description,
   features,
   isPopular,
-  linkLimit,
-  analyticsEnabled,
+  linkLimit: _linkLimit,
+  analyticsEnabled: _analyticsEnabled,
   isLoggedIn,
 }: PricingCardProps) {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(

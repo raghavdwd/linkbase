@@ -1,7 +1,7 @@
 import { api } from "~/trpc/server";
 import { getSession } from "~/server/better-auth/server";
 import { PricingCard } from "./_components/pricing-card";
-import { Check, Zap, Building2 } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 
 /**
  * default plans if database is empty
@@ -75,9 +75,14 @@ export default async function PricingPage() {
   try {
     const dbPlans = await api.subscription.getPlans();
     if (dbPlans.length > 0) {
-      plans = dbPlans;
+      // mapping to ensure nullable fields have default values for type compatibility
+      plans = dbPlans.map((plan) => ({
+        ...plan,
+        description: plan.description ?? "",
+        features: plan.features ?? "[]",
+      }));
     }
-  } catch (error) {
+  } catch (_error) {
     console.log("Using default plans");
   }
 
