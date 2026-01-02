@@ -5,6 +5,7 @@ import { Check, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface PricingCardProps {
   planId: string;
@@ -48,6 +49,7 @@ export function PricingCard({
     "monthly",
   );
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const currentPrice = billingCycle === "yearly" ? priceYearly : priceMonthly;
   const monthlyEquivalent =
@@ -58,7 +60,7 @@ export function PricingCard({
   const handleCheckout = async () => {
     if (slug === "free") {
       // redirect to signup for free plan
-      window.location.href = isLoggedIn ? "/dashboard" : "/login";
+      router.push(isLoggedIn ? "/dashboard" : "/login");
       return;
     }
 
