@@ -3,10 +3,15 @@
 import { Navbar } from "./navbar";
 import { Hero } from "./hero";
 import { Features } from "./features";
+import { HowItWorks } from "./how-it-works";
+import { Stats } from "./stats";
+import { Testimonials } from "./testimonials";
+import { FAQ } from "./faq";
+import { CTA } from "./cta";
 import { Footer } from "./footer";
 
 /**
- * overall landing page container
+ * overall landing page container with all sections
  * @returns landing page component
  */
 export function LandingPage() {
@@ -16,7 +21,11 @@ export function LandingPage() {
       <main>
         <Hero />
         <Features />
-        {/* additional sections could go here (e.g. Testimonials, FAQ) */}
+        <HowItWorks />
+        <Stats />
+        <Testimonials />
+        <FAQ />
+        <CTA />
       </main>
       <Footer />
     </div>

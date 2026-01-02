@@ -21,6 +21,40 @@ interface LinkItemProps {
 }
 
 /**
+ * detecting device type from user agent
+ */
+function getDeviceType(): string {
+  if (typeof window === "undefined") return "unknown";
+
+  const ua = navigator.userAgent.toLowerCase();
+
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+    return "tablet";
+  }
+  if (/mobile|iphone|ipod|blackberry|opera mini|iemobile|wpdesktop/i.test(ua)) {
+    return "mobile";
+  }
+  return "desktop";
+}
+
+/**
+ * detecting browser from user agent
+ */
+function getBrowser(): string {
+  if (typeof window === "undefined") return "unknown";
+
+  const ua = navigator.userAgent.toLowerCase();
+
+  if (ua.includes("edg")) return "Edge";
+  if (ua.includes("chrome")) return "Chrome";
+  if (ua.includes("safari")) return "Safari";
+  if (ua.includes("firefox")) return "Firefox";
+  if (ua.includes("opera") || ua.includes("opr")) return "Opera";
+
+  return "Other";
+}
+
+/**
  * individual link item displayed on public profile
  */
 export function LinkItem({
@@ -31,7 +65,16 @@ export function LinkItem({
   const trackClick = api.analytics.trackClick.useMutation();
 
   const handleClick = () => {
-    trackClick.mutate({ linkId: link.id });
+    const device = getDeviceType();
+    const browser = getBrowser();
+    const referrer = typeof document !== "undefined" ? document.referrer : "";
+
+    trackClick.mutate({
+      linkId: link.id,
+      device,
+      browser,
+      referrer: referrer || "direct",
+    });
   };
 
   const buttonStyleClasses = cn(

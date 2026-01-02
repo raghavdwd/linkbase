@@ -32,18 +32,19 @@ export function Footer() {
             <h4 className="text-foreground font-bold">Product</h4>
             <ul className="text-muted-foreground mt-4 space-y-2 text-sm">
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  Features
+                <Link
+                  href="/how-it-works"
+                  className="hover:text-primary transition-colors"
+                >
+                  How it works
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/pricing"
+                  className="hover:text-primary transition-colors"
+                >
                   Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  Templates
                 </Link>
               </li>
             </ul>
@@ -53,17 +54,26 @@ export function Footer() {
             <h4 className="text-foreground font-bold">Support</h4>
             <ul className="text-muted-foreground mt-4 space-y-2 text-sm">
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/help-center"
+                  className="hover:text-primary transition-colors"
+                >
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/contact"
+                  className="hover:text-primary transition-colors"
+                >
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/status"
+                  className="hover:text-primary transition-colors"
+                >
                   Status
                 </Link>
               </li>
@@ -74,17 +84,26 @@ export function Footer() {
             <h4 className="text-foreground font-bold">Company</h4>
             <ul className="text-muted-foreground mt-4 space-y-2 text-sm">
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/about"
+                  className="hover:text-primary transition-colors"
+                >
                   About
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/blog"
+                  className="hover:text-primary transition-colors"
+                >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/careers"
+                  className="hover:text-primary transition-colors"
+                >
                   Careers
                 </Link>
               </li>
@@ -95,17 +114,26 @@ export function Footer() {
             <h4 className="text-foreground font-bold">Legal</h4>
             <ul className="text-muted-foreground mt-4 space-y-2 text-sm">
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/terms"
+                  className="hover:text-primary transition-colors"
+                >
                   Terms
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/privacy"
+                  className="hover:text-primary transition-colors"
+                >
                   Privacy
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link
+                  href="/cookies"
+                  className="hover:text-primary transition-colors"
+                >
                   Cookies
                 </Link>
               </li>
@@ -119,19 +147,19 @@ export function Footer() {
           </p>
           <div className="flex gap-6">
             <Link
-              href="#"
+              href="/twitter"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Twitter
             </Link>
             <Link
-              href="#"
+              href="/instagram"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Instagram
             </Link>
             <Link
-              href="#"
+              href="/linkedin"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               LinkedIn
