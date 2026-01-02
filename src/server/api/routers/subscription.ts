@@ -150,6 +150,13 @@ export const subscriptionRouter = createTRPCRouter({
         });
       }
 
+      if (!env.RAZORPAY_KEY_ID) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Payment system is not configured",
+        });
+      }
+
       const amount =
         input.billingCycle === "yearly" ? plan.priceYearly : plan.priceMonthly;
 
@@ -164,7 +171,7 @@ export const subscriptionRouter = createTRPCRouter({
         planId: plan.id,
         planName: plan.name,
         billingCycle: input.billingCycle,
-        keyId: env.RAZORPAY_KEY_ID ?? "rzp_test_placeholder",
+        keyId: env.RAZORPAY_KEY_ID,
       };
     }),
 

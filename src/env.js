@@ -19,8 +19,14 @@ export const env = createEnv({
     RESEND_API_KEY: z.string(),
     UPLOADTHING_TOKEN: z.string().optional(),
     DATABASE_URL: z.string().url(),
-    RAZORPAY_KEY_ID: z.string().optional(),
-    RAZORPAY_KEY_SECRET: z.string().optional(),
+    RAZORPAY_KEY_ID:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    RAZORPAY_KEY_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
