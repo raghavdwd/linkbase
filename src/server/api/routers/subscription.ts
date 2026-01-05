@@ -26,6 +26,11 @@ export const subscriptionRouter = createTRPCRouter({
   getPlans: publicProcedure.query(async ({ ctx }) => {
     const allPlans = await ctx.db.query.plans.findMany({
       orderBy: (plans, { asc }) => [asc(plans.priceMonthly)],
+      with: {
+        features: {
+          orderBy: (planFeatures, { asc }) => [asc(planFeatures.order)],
+        },
+      },
     });
     return allPlans;
   }),

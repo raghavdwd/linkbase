@@ -170,8 +170,23 @@ export const plans = pgTable("plan", {
   linkLimit: integer("link_limit").default(5).notNull(), // -1 for unlimited
   analyticsEnabled: boolean("analytics_enabled").default(false).notNull(),
   description: text("description"),
-  features: text("features"), // JSON array of feature strings
   isPopular: boolean("is_popular").default(false).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+/**
+ * planFeatures table - stores individual features for each plan
+ * 4NF: separate table for multi-valued feature attribute
+ */
+export const planFeatures = pgTable("plan_feature", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id")
+    .notNull()
+    .references(() => plans.id, { onDelete: "cascade" }),
+  feature: text("feature").notNull(),
+  order: integer("order").default(0).notNull(), // for display ordering
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
@@ -226,6 +241,14 @@ export const payments = pgTable("payment", {
 // Subscription relations
 export const planRelations = relations(plans, ({ many }) => ({
   subscriptions: many(subscriptions),
+  features: many(planFeatures),
+}));
+
+export const planFeatureRelations = relations(planFeatures, ({ one }) => ({
+  plan: one(plans, {
+    fields: [planFeatures.planId],
+    references: [plans.id],
+  }),
 }));
 
 export const subscriptionRelations = relations(

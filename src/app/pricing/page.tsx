@@ -16,12 +16,12 @@ const DEFAULT_PLANS = [
     linkLimit: 5,
     analyticsEnabled: false,
     description: "Perfect for getting started",
-    features: JSON.stringify([
-      "Up to 5 links",
-      "Basic profile customization",
-      "Standard themes",
-      "Community support",
-    ]),
+    features: [
+      { id: "f1", planId: "free", feature: "Up to 5 links", order: 0, createdAt: new Date() },
+      { id: "f2", planId: "free", feature: "Basic profile customization", order: 1, createdAt: new Date() },
+      { id: "f3", planId: "free", feature: "Standard themes", order: 2, createdAt: new Date() },
+      { id: "f4", planId: "free", feature: "Community support", order: 3, createdAt: new Date() },
+    ],
     isPopular: false,
   },
   {
@@ -33,14 +33,14 @@ const DEFAULT_PLANS = [
     linkLimit: -1, // unlimited
     analyticsEnabled: true,
     description: "For creators who want more",
-    features: JSON.stringify([
-      "Unlimited links",
-      "Full analytics dashboard",
-      "All premium themes",
-      "Social links",
-      "Priority support",
-      "Custom button styles",
-    ]),
+    features: [
+      { id: "p1", planId: "pro", feature: "Unlimited links", order: 0, createdAt: new Date() },
+      { id: "p2", planId: "pro", feature: "Full analytics dashboard", order: 1, createdAt: new Date() },
+      { id: "p3", planId: "pro", feature: "All premium themes", order: 2, createdAt: new Date() },
+      { id: "p4", planId: "pro", feature: "Social links", order: 3, createdAt: new Date() },
+      { id: "p5", planId: "pro", feature: "Priority support", order: 4, createdAt: new Date() },
+      { id: "p6", planId: "pro", feature: "Custom button styles", order: 5, createdAt: new Date() },
+    ],
     isPopular: true,
   },
   {
@@ -52,14 +52,14 @@ const DEFAULT_PLANS = [
     linkLimit: -1,
     analyticsEnabled: true,
     description: "For teams and businesses",
-    features: JSON.stringify([
-      "Everything in Pro",
-      "Team collaboration",
-      "Custom branding",
-      "API access",
-      "Dedicated support",
-      "White-label option",
-    ]),
+    features: [
+      { id: "b1", planId: "business", feature: "Everything in Pro", order: 0, createdAt: new Date() },
+      { id: "b2", planId: "business", feature: "Team collaboration", order: 1, createdAt: new Date() },
+      { id: "b3", planId: "business", feature: "Custom branding", order: 2, createdAt: new Date() },
+      { id: "b4", planId: "business", feature: "API access", order: 3, createdAt: new Date() },
+      { id: "b5", planId: "business", feature: "Dedicated support", order: 4, createdAt: new Date() },
+      { id: "b6", planId: "business", feature: "White-label option", order: 5, createdAt: new Date() },
+    ],
     isPopular: false,
   },
 ];
@@ -112,10 +112,8 @@ export default async function PricingPage() {
       <div className="mx-auto max-w-6xl px-4 pb-20">
         <div className="grid gap-8 md:grid-cols-3">
           {plans.map((plan) => {
-            const features =
-              typeof plan.features === "string"
-                ? (JSON.parse(plan.features) as string[])
-                : (plan.features ?? []);
+            // Extract feature strings from the features array
+            const features = plan.features?.map((f) => f.feature) ?? [];
 
             return (
               <PricingCard
