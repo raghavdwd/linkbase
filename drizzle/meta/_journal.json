@@ -8,6 +8,20 @@
       "when": 1767185570654,
       "tag": "0000_add_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767627203109,
+      "tag": "0001_thick_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768172694702,
+      "tag": "0002_gifted_lord_tyger",
+      "breakpoints": true
     }
   ]
 }

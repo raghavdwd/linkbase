@@ -4,6 +4,33 @@ import { ExternalLink } from "lucide-react";
 import { api } from "~/trpc/react";
 import { cn } from "~/lib/utils";
 
+/**
+ * theme configuration interface for preset themes (uses Tailwind classes)
+ */
+interface PresetThemeConfig {
+  type: "preset";
+  main: string;
+  card: string;
+  text: string;
+  primary: string;
+  accent: string;
+}
+
+/**
+ * theme configuration interface for custom themes (uses hex colors)
+ */
+interface CustomThemeConfig {
+  type: "custom";
+  main: string;
+  card: string;
+  cardBorder: string;
+  text: string;
+  primary: string;
+  accent: string;
+}
+
+type ThemeConfig = PresetThemeConfig | CustomThemeConfig;
+
 interface LinkItemProps {
   link: {
     id: string;
@@ -11,12 +38,7 @@ interface LinkItemProps {
     url: string;
     icon?: string | null;
   };
-  theme: {
-    card: string;
-    text: string;
-    primary: string;
-    accent: string;
-  };
+  theme: ThemeConfig;
   buttonStyle?: string;
 }
 
@@ -56,6 +78,7 @@ function getBrowser(): string {
 
 /**
  * individual link item displayed on public profile
+ * supports both preset themes (Tailwind classes) and custom themes (inline styles)
  */
 export function LinkItem({
   link,
@@ -77,22 +100,64 @@ export function LinkItem({
     });
   };
 
-  const buttonStyleClasses = cn(
-    "flex w-full items-center justify-between border-2 p-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm",
-    buttonStyle === "rounded" && "rounded-full",
-    buttonStyle === "soft" && "rounded-2xl",
-    buttonStyle === "sharp" && "rounded-none",
-    buttonStyle === "outline" && "rounded-full bg-transparent border-current",
-    theme.card,
-  );
+  // extracting theme properties based on type for cleaner code
+  if (theme.type === "custom") {
+    // custom theme: using inline styles with hex colors
+    return (
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleClick}
+        className={cn(
+          "flex w-full items-center justify-between border-2 p-4 shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
+          buttonStyle === "rounded" && "rounded-full",
+          buttonStyle === "soft" && "rounded-2xl",
+          buttonStyle === "sharp" && "rounded-none",
+          buttonStyle === "outline" &&
+            "rounded-full border-current bg-transparent",
+        )}
+        style={{
+          backgroundColor:
+            buttonStyle === "outline" ? "transparent" : theme.card,
+          borderColor: theme.cardBorder,
+        }}
+      >
+        <div className="flex h-6 w-6 items-center justify-center opacity-0">
+          <ExternalLink size={18} />
+        </div>
+        <span
+          className="text-center font-semibold"
+          style={{ color: theme.text }}
+        >
+          {link.title}
+        </span>
+        <div
+          className="flex h-8 w-8 items-center justify-center rounded-full opacity-60"
+          style={{ color: theme.accent }}
+        >
+          <ExternalLink size={18} />
+        </div>
+      </a>
+    );
+  }
 
+  // preset theme: using Tailwind classes
   return (
     <a
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className={buttonStyleClasses}
+      className={cn(
+        "flex w-full items-center justify-between border-2 p-4 shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
+        buttonStyle === "rounded" && "rounded-full",
+        buttonStyle === "soft" && "rounded-2xl",
+        buttonStyle === "sharp" && "rounded-none",
+        buttonStyle === "outline" &&
+          "rounded-full border-current bg-transparent",
+        theme.card,
+      )}
     >
       <div className="flex h-6 w-6 items-center justify-center opacity-0">
         <ExternalLink size={18} />

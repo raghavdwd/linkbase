@@ -7,6 +7,8 @@ import {
   pgTableCreator,
   text,
   timestamp,
+  jsonb,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `pg-drizzle_${name}`);
@@ -32,7 +34,7 @@ export const posts = pgTable(
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  name: text("name"),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified")
     .$defaultFn(() => false)
@@ -42,12 +44,12 @@ export const user = pgTable("user", {
   image: text("image"),
   theme: text("theme").default("default").notNull(),
   buttonStyle: text("button_style").default("rounded").notNull(),
-  socialLinks: text("social_links"), // stored as JSON string
+  socialLinks: jsonb("social_links"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
   updatedAt: timestamp("updated_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .$defaultFn(() => new Date())
     .notNull(),
 });
 
@@ -127,7 +129,11 @@ export const analytics = pgTable("analytics", {
   device: text("device"),
   browser: text("browser"),
   referrer: text("referrer"),
-});
+}, (t) => [
+  index("analytics_link_id_idx").on(t.linkId),
+  index("analytics_user_id_idx").on(t.userId),
+  index("analytics_clicked_at_idx").on(t.clickedAt),
+]);
 
 export const userRelations = relations(user, ({ many }) => ({
   account: many(account),
@@ -170,7 +176,7 @@ export const plans = pgTable("plan", {
   linkLimit: integer("link_limit").default(5).notNull(), // -1 for unlimited
   analyticsEnabled: boolean("analytics_enabled").default(false).notNull(),
   description: text("description"),
-  features: text("features"), // JSON array of feature strings
+  features: jsonb("features"),
   isPopular: boolean("is_popular").default(false).notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
@@ -250,4 +256,33 @@ export const paymentRelations = relations(payments, ({ one }) => ({
 // Update user relations to include subscriptions
 export const userSubscriptionRelations = relations(user, ({ many }) => ({
   subscriptions: many(subscriptions),
+}));
+
+/**
+ * customThemes table - stores user-created theme configurations
+ * colors stored as hex values for CSS compatibility
+ */
+export const customThemes = pgTable("custom_theme", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // user-friendly theme name
+  main: text("main").notNull(), // background color (hex)
+  card: text("card").notNull(), // card background color (hex)
+  cardBorder: text("card_border").notNull(), // card border color (hex)
+  text: text("text").notNull(), // text color (hex)
+  primary: text("primary").notNull(), // button/primary color (hex)
+  accent: text("accent").notNull(), // accent color (hex)
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+}, (t) => [
+  unique("custom_theme_user_id_name_unique").on(t.userId, t.name),
+]);
+export const customThemeRelations = relations(customThemes, ({ one }) => ({
+  user: one(user, { fields: [customThemes.userId], references: [user.id] }),
 }));

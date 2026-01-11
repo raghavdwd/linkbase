@@ -16,12 +16,12 @@ const DEFAULT_PLANS = [
     linkLimit: 5,
     analyticsEnabled: false,
     description: "Perfect for getting started",
-    features: JSON.stringify([
+    features: [
       "Up to 5 links",
       "Basic profile customization",
       "Standard themes",
       "Community support",
-    ]),
+    ],
     isPopular: false,
   },
   {
@@ -33,14 +33,14 @@ const DEFAULT_PLANS = [
     linkLimit: -1, // unlimited
     analyticsEnabled: true,
     description: "For creators who want more",
-    features: JSON.stringify([
+    features: [
       "Unlimited links",
       "Full analytics dashboard",
       "All premium themes",
       "Social links",
       "Priority support",
       "Custom button styles",
-    ]),
+    ],
     isPopular: true,
   },
   {
@@ -52,14 +52,14 @@ const DEFAULT_PLANS = [
     linkLimit: -1,
     analyticsEnabled: true,
     description: "For teams and businesses",
-    features: JSON.stringify([
+    features: [
       "Everything in Pro",
       "Team collaboration",
       "Custom branding",
       "API access",
       "Dedicated support",
       "White-label option",
-    ]),
+    ],
     isPopular: false,
   },
 ];
@@ -79,12 +79,10 @@ export default async function PricingPage() {
       plans = dbPlans.map((plan) => ({
         ...plan,
         description: plan.description ?? "",
-        features: plan.features ?? "[]",
+        features: (plan.features as string[]) ?? [],
       }));
     }
-  } catch (_error) {
-    console.log("Using default plans");
-  }
+  } catch (_error) {}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900">
@@ -112,10 +110,7 @@ export default async function PricingPage() {
       <div className="mx-auto max-w-6xl px-4 pb-20">
         <div className="grid gap-8 md:grid-cols-3">
           {plans.map((plan) => {
-            const features =
-              typeof plan.features === "string"
-                ? (JSON.parse(plan.features) as string[])
-                : (plan.features ?? []);
+            const features = plan.features;
 
             return (
               <PricingCard

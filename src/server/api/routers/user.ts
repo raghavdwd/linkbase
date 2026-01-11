@@ -47,7 +47,7 @@ export const userRouter = createTRPCRouter({
           .or(z.literal("")),
         theme: z.string().optional(),
         buttonStyle: z.string().optional(),
-        socialLinks: z.string().optional(),
+        socialLinks: z.any().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

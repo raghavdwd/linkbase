@@ -7,7 +7,7 @@ import { env } from "~/env";
 import * as schema from "~/server/db/schema";
 import { db } from "../db";
 
-const resend = new Resend(env.RESEND_API_KEY);
+const resend = new Resend(env.RESEND_API_KEY as string);
 
 export const auth = betterAuth({
   // Use the actual site origin to keep OAuth state cookies scoped to the same host
@@ -17,6 +17,17 @@ export const auth = betterAuth({
   // Enable library logging to surface debug information in server logs
   logger: console,
   // Keep OAuth state in DB and relax cookie matching locally to avoid host/port mismatches
+  advanced: {
+    cookies: {
+      state: {
+        attributes: {
+          // using "lax" instead of "none" because "none" requires HTTPS
+          // and we're running on http://localhost in development
+          sameSite: "lax",
+        },
+      },
+    },
+  },
   account: {
     storeStateStrategy: "database",
     skipStateCookieCheck: env.NODE_ENV !== "production",
@@ -36,14 +47,13 @@ export const auth = betterAuth({
   },
   socialProviders: {
     github: {
-      clientId: env.BETTER_AUTH_GITHUB_CLIENT_ID,
-      clientSecret: env.BETTER_AUTH_GITHUB_CLIENT_SECRET,
-      redirectURI: `${env.AUTH_URL}/api/auth/callback/github`,
+      clientId: env.BETTER_AUTH_GITHUB_CLIENT_ID as string,
+      clientSecret: env.BETTER_AUTH_GITHUB_CLIENT_SECRET as string,
+      scope: ["user:email"],
     },
     google: {
-      clientId: env.BETTER_AUTH_GOOGLE_CLIENT_ID ?? "",
-      clientSecret: env.BETTER_AUTH_GOOGLE_CLIENT_SECRET ?? "",
-      redirectURI: `${env.AUTH_URL}/api/auth/callback/google`,
+      clientId: (env.BETTER_AUTH_GOOGLE_CLIENT_ID as string) ?? "",
+      clientSecret: (env.BETTER_AUTH_GOOGLE_CLIENT_SECRET as string) ?? "",
     },
   },
   session: {

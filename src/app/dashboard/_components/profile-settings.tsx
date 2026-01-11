@@ -47,15 +47,10 @@ export function ProfileSettings() {
       setUsername(user.username ?? "");
       setBio(user.bio ?? "");
       setImage(user.image ?? "");
-      setTheme((user.theme as ThemeType) ?? "default");
+      setTheme(user.theme ?? "default");
       setButtonStyle((user.buttonStyle as ButtonStyleType) ?? "rounded");
       if (user.socialLinks) {
-        try {
-          const parsed = JSON.parse(user.socialLinks) as SocialLink[];
-          setSocialLinks(parsed);
-        } catch {
-          setSocialLinks([]);
-        }
+        setSocialLinks(user.socialLinks as SocialLink[]);
       }
     }
   }, [user]);
@@ -81,7 +76,7 @@ export function ProfileSettings() {
       image: image || undefined,
       theme,
       buttonStyle,
-      socialLinks: JSON.stringify(socialLinks),
+      socialLinks,
     });
   };
 
@@ -130,10 +125,8 @@ export function ProfileSettings() {
               <UploadButton
                 endpoint="profileImage"
                 onClientUploadComplete={(res) => {
-                  console.log("Upload response:", res);
                   // extracting URL from response - server returns 'url' in the response object
                   const url = res[0]?.url;
-                  console.log("Extracted URL:", url);
 
                   if (url) {
                     setImage(url);
@@ -143,7 +136,6 @@ export function ProfileSettings() {
                     });
                     toast.success("image uploaded & saved!");
                   } else {
-                    console.error("No URL found in upload response");
                     toast.error("Upload succeeded but URL not found");
                   }
                 }}

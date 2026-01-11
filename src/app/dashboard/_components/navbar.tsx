@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
 import {
   MousePointer2,
@@ -10,6 +12,8 @@ import {
   Loader2,
   Link as LinkIcon,
   Sparkles,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 import { authClient } from "~/server/better-auth/client";
 import { Button } from "~/components/ui/button";
@@ -24,12 +28,11 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { cn } from "~/lib/utils";
 
-/**
- * simplified navbar for the dashboard
- */
 export function DashboardNavbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = authClient.useSession();
   const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -55,7 +58,6 @@ export function DashboardNavbar() {
     },
   });
 
-  // prompt to set username if it doesn't exist
   useEffect(() => {
     if (!isProfileLoading && userProfile && !userProfile.username) {
       setIsUsernameDialogOpen(true);
@@ -104,15 +106,47 @@ export function DashboardNavbar() {
 
           <div className="flex gap-4 md:gap-6">
             <Link
-              href="/dashboard"
-              className="hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors"
+              href="/dashboard/links"
+              className={cn(
+                "hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors",
+                pathname === "/dashboard/links"
+                  ? "text-primary"
+                  : "text-muted-foreground",
+              )}
             >
               <Layout size={16} />{" "}
-              <span className="xs:inline hidden">dashboard</span>
+              <span className="xs:inline hidden">links</span>
+            </Link>
+            <Link
+              href="/dashboard/analytics"
+              className={cn(
+                "hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors",
+                pathname === "/dashboard/analytics"
+                  ? "text-primary"
+                  : "text-muted-foreground",
+              )}
+            >
+              <BarChart3 size={16} />{" "}
+              <span className="xs:inline hidden">analytics</span>
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className={cn(
+                "hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors",
+                pathname === "/dashboard/settings"
+                  ? "text-primary"
+                  : "text-muted-foreground",
+              )}
+            >
+              <Settings size={16} />{" "}
+              <span className="xs:inline hidden">settings</span>
             </Link>
             <Link
               href="/pricing"
-              className="hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors"
+              className={cn(
+                "hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors",
+                pathname === "/pricing" ? "text-primary" : "text-muted-foreground",
+              )}
             >
               <Sparkles size={16} />{" "}
               <span className="xs:inline hidden">pricing</span>
@@ -166,11 +200,9 @@ export function DashboardNavbar() {
         </div>
       </div>
 
-      {/* Username Setup Dialog */}
       <Dialog
         open={isUsernameDialogOpen}
         onOpenChange={(open) => {
-          // don't allow closing if username is missing
           if (userProfile?.username) setIsUsernameDialogOpen(open);
         }}
       >

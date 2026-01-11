@@ -3,6 +3,7 @@ import { linkRouter } from "~/server/api/routers/link";
 import { userRouter } from "~/server/api/routers/user";
 import { postRouter } from "~/server/api/routers/post";
 import { subscriptionRouter } from "~/server/api/routers/subscription";
+import { themesRouter } from "~/server/api/routers/theme";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   analytics: analyticsRouter,
   user: userRouter,
   subscription: subscriptionRouter,
+  themes: themesRouter,
 });
 
 // export type definition of API
