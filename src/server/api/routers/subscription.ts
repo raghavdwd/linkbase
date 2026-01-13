@@ -7,6 +7,8 @@ import {
 import { plans, subscriptions, payments, links } from "~/server/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { createHmac, timingSafeEqual } from "crypto";
+import { env } from "~/env";
 
 /**
  * default plan limits for users without a subscription
@@ -148,6 +150,13 @@ export const subscriptionRouter = createTRPCRouter({
         });
       }
 
+      if (!env.RAZORPAY_KEY_ID) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Payment system is not configured",
+        });
+      }
+
       const amount =
         input.billingCycle === "yearly" ? plan.priceYearly : plan.priceMonthly;
 
@@ -162,7 +171,7 @@ export const subscriptionRouter = createTRPCRouter({
         planId: plan.id,
         planName: plan.name,
         billingCycle: input.billingCycle,
-        keyId: process.env.RAZORPAY_KEY_ID ?? "rzp_test_placeholder",
+        keyId: env.RAZORPAY_KEY_ID,
       };
     }),
 
@@ -180,7 +189,32 @@ export const subscriptionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: verify signature with Razorpay
+      // verify Razorpay signature to prevent payment forgery
+      if (!env.RAZORPAY_KEY_SECRET) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Razorpay configuration is incomplete",
+        });
+      }
+
+      // generate expected signature using HMAC SHA256
+      const generatedSignature = createHmac("sha256", env.RAZORPAY_KEY_SECRET)
+        .update(`${input.orderId}|${input.paymentId}`)
+        .digest("hex");
+
+      // compare signatures using timing-safe comparison to prevent timing attacks
+      const receivedSignatureBuffer = Buffer.from(input.signature, "hex");
+      const generatedSignatureBuffer = Buffer.from(generatedSignature, "hex");
+
+      if (
+        receivedSignatureBuffer.length !== generatedSignatureBuffer.length ||
+        !timingSafeEqual(receivedSignatureBuffer, generatedSignatureBuffer)
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid payment signature",
+        });
+      }
 
       // getting the plan
       const plan = await ctx.db.query.plans.findFirst({
