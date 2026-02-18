@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { cn } from "~/lib/utils";
 
 interface LinkItemProps {
@@ -25,6 +27,12 @@ function LinkItem({ label, color }: LinkItemProps) {
  * @returns phone mockup component
  */
 export function PhoneMockup() {
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setOrigin(window.location.host);
+  }, []);
+
   return (
     <div className="border-foreground bg-background relative mx-auto h-[600px] w-[300px] rounded-[3rem] border-[8px] p-4 shadow-2xl">
       {/* speaker/notch */}
@@ -32,13 +40,18 @@ export function PhoneMockup() {
 
       <div className="mt-8 flex flex-col items-center gap-6">
         {/* profile picture placeholder */}
-        <div className="bg-primary/20 h-24 w-24 rounded-full p-1">
-          <div className="bg-primary h-full w-full rounded-full" />
+        <div className="bg-primary/20 relative h-24 w-24 overflow-hidden rounded-full p-1">
+          <Image
+            src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=400"
+            alt="Profile picture"
+            fill
+            className="rounded-full object-cover p-1"
+          />
         </div>
 
         <div className="text-center">
           <h3 className="text-xl font-bold">@yourname</h3>
-          <p className="text-muted-foreground text-xs">linkbase.io/yourname</p>
+          <p className="text-muted-foreground text-xs">{origin || "linkbase.com"}/yourname</p>
         </div>
 
         <div className="flex w-full flex-col gap-3 px-2">

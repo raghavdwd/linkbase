@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -12,7 +12,12 @@ import { PhoneMockup } from "./phone-mockup";
  */
 export function Hero() {
   const [username, setUsername] = useState("");
+  const [origin, setOrigin] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    setOrigin(window.location.host);
+  }, []);
 
   /**
    * handles the claim button click
@@ -59,8 +64,8 @@ export function Hero() {
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <div className="relative flex-1">
-                <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
-                  linkbase.io/
+                <span className="text-muted-foreground absolute top-1/2 left-1 -translate-y-1/2">
+                  {origin ? `${origin}/` : "linkbase.com/"}
                 </span>
                 <Input
                   type="text"
@@ -68,7 +73,7 @@ export function Hero() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="focus-visible:ring-primary h-14 pl-24 text-lg"
+                  className="focus-visible:ring-primary h-14 pl-32 text-lg"
                 />
               </div>
               <Button
