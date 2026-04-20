@@ -78,14 +78,6 @@ export default function HowItWorksPage() {
               >
                 <Link href="/signup">Get started free</Link>
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-8 font-bold"
-                asChild
-              >
-                <Link href="/pricing">View pricing</Link>
-              </Button>
             </div>
           </div>
         </div>
@@ -178,14 +170,6 @@ export default function HowItWorksPage() {
                 asChild
               >
                 <Link href="/signup">Sign up free</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full bg-white/20 px-8 font-bold text-white hover:bg-white/30"
-                asChild
-              >
-                <Link href="/pricing">View plans</Link>
               </Button>
             </div>
           </div>

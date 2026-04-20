@@ -28,12 +28,6 @@ export function Navbar() {
             How it works
           </Link>
           <Link
-            href="/pricing"
-            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
-          >
-            Pricing
-          </Link>
-          <Link
             href="/blog"
             className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
           >

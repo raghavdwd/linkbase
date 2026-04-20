@@ -24,9 +24,6 @@ import {
 } from "~/components/ui/card";
 import { api } from "~/trpc/react";
 import { Skeleton } from "~/components/ui/skeleton";
-import { Button } from "~/components/ui/button";
-import Link from "next/link";
-import { Lock, Sparkles } from "lucide-react";
 
 const COLORS = [
   "hsl(var(--primary))",
@@ -63,35 +60,6 @@ export function AnalyticsView() {
   }
 
   if (!summary) return null;
-
-  // checking if user needs to upgrade for full analytics
-  if (summary.requiresUpgrade) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="bg-primary/10 mb-6 flex h-20 w-20 items-center justify-center rounded-full">
-          <Lock className="text-primary" size={40} />
-        </div>
-        <h2 className="mb-2 text-2xl font-bold">Unlock Full Analytics</h2>
-        <p className="text-muted-foreground mb-2 max-w-md">
-          You&apos;ve had{" "}
-          <span className="text-primary font-bold">{summary.totalClicks}</span>{" "}
-          total clicks! Upgrade to Pro to see detailed analytics including:
-        </p>
-        <ul className="text-muted-foreground mb-6 space-y-1 text-sm">
-          <li>✓ Click trends over time</li>
-          <li>✓ Performance by link</li>
-          <li>✓ Device & browser breakdown</li>
-          <li>✓ Referrer tracking</li>
-        </ul>
-        <Link href="/pricing">
-          <Button className="h-12 rounded-full px-8 text-base font-semibold">
-            <Sparkles className="mr-2" size={18} />
-            Upgrade to Pro
-          </Button>
-        </Link>
-      </div>
-    );
-  }
 
   // formatting device data for pie charts
   const formattedDeviceData = (deviceStats ?? []).map((item) => ({

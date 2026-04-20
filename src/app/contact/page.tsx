@@ -390,14 +390,6 @@ export default function ContactPage() {
               >
                 <Link href="/signup">Sign up free</Link>
               </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full bg-white/20 px-8 font-bold text-white hover:bg-white/30"
-                asChild
-              >
-                <Link href="/pricing">View plans</Link>
-              </Button>
             </div>
           </div>
         </div>

@@ -287,14 +287,6 @@ export default function BlogPage() {
               >
                 <Link href="/signup">Get Started Free</Link>
               </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full bg-white/20 px-8 font-bold text-white hover:bg-white/30"
-                asChild
-              >
-                <Link href="/pricing">View Plans</Link>
-              </Button>
             </div>
           </div>
         </div>

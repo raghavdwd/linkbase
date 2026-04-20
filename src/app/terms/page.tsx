@@ -177,42 +177,6 @@ export default function TermsPage() {
               </CardContent>
             </Card>
 
-            {/* Subscription and Payments */}
-            <Card className="border-none shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">
-                  Subscription and Payments
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Subscription Plans</h4>
-                  <p className="text-muted-foreground">
-                    Linkbase offers both free and paid subscription plans. You
-                    agree to pay all fees for your chosen plan. We reserve the
-                    right to change our fees at any time with notice.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Automatic Renewal</h4>
-                  <p className="text-muted-foreground">
-                    Paid subscriptions automatically renew at the end of each
-                    billing period unless you cancel before the renewal date.
-                    You can manage your subscription settings in your account
-                    dashboard.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Refunds</h4>
-                  <p className="text-muted-foreground">
-                    We offer a 7-day money-back guarantee for new subscriptions.
-                    After 7 days, subscription fees are non-refundable except as
-                    required by law.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Intellectual Property */}
             <Card className="border-none shadow-xl">
               <CardHeader>
@@ -350,14 +314,6 @@ export default function TermsPage() {
                 asChild
               >
                 <Link href="/signup">Sign up free</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full bg-white/20 px-8 font-bold text-white hover:bg-white/30"
-                asChild
-              >
-                <Link href="/pricing">View plans</Link>
               </Button>
             </div>
           </div>

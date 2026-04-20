@@ -4,29 +4,8 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { analytics, links, subscriptions, plans } from "~/server/db/schema";
+import { analytics, links } from "~/server/db/schema";
 import { eq, count, and, sql } from "drizzle-orm";
-import { db } from "~/server/db";
-
-/**
- * helper to check if user has analytics access
- */
-async function checkAnalyticsAccess(userId: string) {
-  const subscription = await db.query.subscriptions.findFirst({
-    where: and(
-      eq(subscriptions.userId, userId),
-      eq(subscriptions.status, "active"),
-    ),
-  });
-
-  if (!subscription) return false;
-
-  const plan = await db.query.plans.findFirst({
-    where: eq(plans.id, subscription.planId),
-  });
-
-  return plan?.analyticsEnabled ?? false;
-}
 
 /**
  * tRPC router for analytics data
@@ -36,24 +15,6 @@ export const analyticsRouter = createTRPCRouter({
    * fetching aggregated click analytics for the current user's links
    */
   getSummary: protectedProcedure.query(async ({ ctx }) => {
-    // checking if user has analytics access
-    const hasAccess = await checkAnalyticsAccess(ctx.session.user.id);
-
-    if (!hasAccess) {
-      // returning limited data for free users
-      const [totalClicks] = await ctx.db
-        .select({ value: count() })
-        .from(analytics)
-        .where(eq(analytics.userId, ctx.session.user.id));
-
-      return {
-        totalClicks: totalClicks?.value ?? 0,
-        clicksPerLink: [],
-        clicksOverTime: [],
-        requiresUpgrade: true,
-      };
-    }
-
     // total clicks across all links
     const [totalClicks] = await ctx.db
       .select({ value: count() })
@@ -92,7 +53,6 @@ export const analyticsRouter = createTRPCRouter({
       totalClicks: totalClicks?.value ?? 0,
       clicksPerLink,
       clicksOverTime,
-      requiresUpgrade: false,
     };
   }),
 

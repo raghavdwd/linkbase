@@ -112,7 +112,6 @@ export default function PrivacyPage() {
                   <ul className="text-muted-foreground list-inside list-disc space-y-1">
                     <li>Personal details such as name, email address</li>
                     <li>Account credentials and profile information</li>
-                    <li>Payment information for subscription services</li>
                     <li>Social media profiles and links</li>
                     <li>Content you create and share on our platform</li>
                   </ul>
@@ -435,14 +434,6 @@ export default function PrivacyPage() {
                 asChild
               >
                 <Link href="/signup">Sign up free</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full bg-white/20 px-8 font-bold text-white hover:bg-white/30"
-                asChild
-              >
-                <Link href="/pricing">View plans</Link>
               </Button>
             </div>
           </div>
