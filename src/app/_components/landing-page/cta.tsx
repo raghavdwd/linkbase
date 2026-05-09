@@ -44,15 +44,6 @@ export function CTA() {
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link href="/how-it-works">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-14 rounded-full px-8 text-lg font-bold"
-                >
-                  See how it works
-                </Button>
-              </Link>
             </div>
 
             <p className="text-muted-foreground mt-6 text-sm">
