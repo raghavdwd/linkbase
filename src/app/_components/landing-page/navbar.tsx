@@ -20,27 +20,6 @@ export function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
-          <Link
-            href="/how-it-works"
-            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
-          >
-            How it works
-          </Link>
-          <Link
-            href="/blog"
-            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
-          >
-            Blog
-          </Link>
-          <Link
-            href="/about"
-            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
-          >
-            About
-          </Link>
-        </div>
-
         <div className="flex items-center gap-4">
           <Link href="/login">
             <Button variant="ghost" className="text-foreground font-semibold">
